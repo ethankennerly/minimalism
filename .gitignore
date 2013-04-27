@@ -1,0 +1,23 @@
+# Build and Release Folders
+bin-debug/
+bin-release/
+
+# Project property files
+.actionScriptProperties
+.flexProperties
+.settings/
+.project
+
+# Flash CS cache
+SymDepend.cache
+
+# Vim temp files
+*.swp
+*.swo
+*.swn
+
+# DAME backup file
+/*.dam.bak
+
+# Compiled, avoid merge conflict
+bin/*.swf
