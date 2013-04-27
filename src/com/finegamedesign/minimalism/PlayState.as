@@ -19,6 +19,9 @@ package com.finegamedesign.minimalism
         private var signDirection:int;
         private var driftTimer:FlxTimer;
         private var truck:Truck;
+        private var velocityX:int = -160;
+        private var road:Road;
+        private var roads:FlxGroup;
         private var spawnTimer:FlxTimer;
         private var spawnTime:Number = 2.0;
         private var progressTimer:FlxTimer;
@@ -31,6 +34,15 @@ package com.finegamedesign.minimalism
             // FlxG.visualDebug = true;
             super.create();
             driftTimer = new FlxTimer();
+            roads = new FlxGroup();
+            road = new Road();
+            var roadY:int = middleY - road.height / 2;
+            for (var roadX:int = 0; roadX < FlxG.width + 2 * road.width; roadX += road.width - 2) {
+                road = new Road(roadX, roadY);
+                road.velocity.x = velocityX;
+                roads.add(road);
+            }
+            add(roads);
             enemies = new FlxGroup();
             for (var concurrentTruck:int = 0; concurrentTruck < 2; concurrentTruck++) {
                 truck = new Truck();
@@ -74,7 +86,7 @@ package com.finegamedesign.minimalism
             truck.revive();
             truck.y = middleY + -signDirection * driftDistance;
             truck.x = 640;
-            truck.velocity.x = -320;
+            truck.velocity.x = 2 * velocityX;
             add(truck);
         }
         
