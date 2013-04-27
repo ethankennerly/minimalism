@@ -16,7 +16,14 @@ package com.finegamedesign.minimalism
         private var middleY:int = 240;
         private var targetY:int;
         private var direction:int;
+        private var signDirection:int;
         private var driftTimer:FlxTimer;
+        private var truck:Truck;
+        private var spawnTimer:FlxTimer;
+        private var spawnTime:Number = 2.0;
+        private var progressTimer:FlxTimer;
+        private var progressTime:Number = 1.0;
+        private var distance:int;
 
         override public function create():void
         {
@@ -25,14 +32,22 @@ package com.finegamedesign.minimalism
             super.create();
             driftTimer = new FlxTimer();
             enemies = new FlxGroup();
-            direction = -1;
+            for (var concurrentTruck:int = 0; concurrentTruck < 2; concurrentTruck++) {
+                truck = new Truck();
+                truck.exists = false;
+            }
+            enemies.add(truck);
+            spawnTimer = new FlxTimer();
+            spawnTimer.start(spawnTime, 9, spawnTruck);
+            progressTimer = new FlxTimer();
+            progressTimer.start(progressTime, 9, progress);
+            direction = 1;
+            signDirection = 1;
             player = new Player(40, middleY + direction * driftDistance);
             add(player);
             addGibs();
             addHud();
             state = "play";
-            FlxG.camera.x = 0;
-            FlxG.camera.y = 0;
         }
 
         /**
@@ -43,7 +58,7 @@ package com.finegamedesign.minimalism
             direction = -direction;
             targetY = middleY + direction * driftDistance;
             player.velocity.y = 2 * direction * driftDistance * (1.0 / driftTime);
-            FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
+            // FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
             driftTimer.start(driftTime, 1, drift);
         }
 
@@ -52,7 +67,23 @@ package com.finegamedesign.minimalism
             player.velocity.y = 0;
             player.y = targetY;
         }
-
+        
+        private function spawnTruck(timer:FlxTimer):void
+        {
+            truck = Truck(enemies.getFirstAvailable());
+            truck.revive();
+            truck.y = middleY + -signDirection * driftDistance;
+            truck.x = 640;
+            truck.velocity.x = -320;
+            add(truck);
+        }
+        
+        private function progress(timer:FlxTimer):void
+        {
+            distance++;
+            FlxG.score += 100;
+        }
+        
         private function addGibs():void
         {
             gibs = new FlxEmitter();
@@ -80,7 +111,7 @@ package com.finegamedesign.minimalism
             waveText.scrollFactor.x = 0.0;
             waveText.scrollFactor.y = 0.0;
             add(waveText);
-            scoreText = new FlxText(FlxG.width - 40, 0, 100, "");
+            scoreText = new FlxText(FlxG.width - 120, 0, 100, "");
             scoreText.color = MenuState.textColor;
             scoreText.scrollFactor.x = 0.0;
             scoreText.scrollFactor.y = 0.0;
@@ -90,6 +121,7 @@ package com.finegamedesign.minimalism
 		override public function update():void 
         {
             updateInput();
+            enemies.update();
             FlxG.overlap(player, enemies, collide);
             updateHud();
             super.update();
@@ -98,13 +130,13 @@ package com.finegamedesign.minimalism
         private function updateHud():void
         {
             if ("play" == state) {
-                scoreText.text = "SCORE " + FlxG.score.toString();
-                if (false) {
+                scoreText.text = "DISTANCE " + FlxG.score.toString();
+                if (player.health <= 0) {
                     state = "lose";
                     instructionText.text = "YOU LOST";
                     FlxG.fade(0xFF000000, 3.0, lose);
                 }
-                else if (false) {
+                else if (10 <= distance) {
                     FlxG.score += 100;
                     instructionText.text = "YOU WON";
                     state = "win";
