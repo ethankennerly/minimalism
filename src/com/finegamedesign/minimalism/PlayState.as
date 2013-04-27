@@ -37,7 +37,7 @@ package com.finegamedesign.minimalism
             roads = new FlxGroup();
             road = new Road();
             var roadY:int = middleY - road.height / 2;
-            for (var roadX:int = 0; roadX < FlxG.width + 2 * road.width; roadX += road.width - 2) {
+            for (var roadX:int = 0; roadX < FlxG.width + 2 * road.width; roadX += int(road.width - 3)) {
                 road = new Road(roadX, roadY);
                 road.velocity.x = velocityX;
                 roads.add(road);
@@ -56,6 +56,7 @@ package com.finegamedesign.minimalism
             direction = 1;
             signDirection = 1;
             player = new Player(40, middleY + direction * driftDistance);
+            targetY = middleY + direction * driftDistance;
             add(player);
             addGibs();
             addHud();
@@ -67,17 +68,21 @@ package com.finegamedesign.minimalism
          */
         private function switchLane():void
         {
+            // driftTimer.stop();
             direction = -direction;
             targetY = middleY + direction * driftDistance;
             player.velocity.y = 2 * direction * driftDistance * (1.0 / driftTime);
-            // FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
-            driftTimer.start(driftTime, 1, drift);
+            FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
+            // driftTimer.start(Math.abs(targetY - player.y) / driftDistance * driftTime, 1, drift);
         }
 
-        private function drift(timer:FlxTimer):void
+        private function mayStopDrift():void
         {
-            player.velocity.y = 0;
-            player.y = targetY;
+            if (direction < 0 && player.y <= targetY
+                    || 0 < direction && targetY <= player.y) {
+                player.velocity.y = 0;
+                player.y = targetY;
+            }
         }
         
         private function spawnTruck(timer:FlxTimer):void
@@ -133,6 +138,7 @@ package com.finegamedesign.minimalism
 		override public function update():void 
         {
             updateInput();
+            mayStopDrift();
             enemies.update();
             FlxG.overlap(player, enemies, collide);
             updateHud();

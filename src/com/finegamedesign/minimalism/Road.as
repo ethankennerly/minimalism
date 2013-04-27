@@ -16,7 +16,7 @@ package com.finegamedesign.minimalism
         override public function update():void 
         {
             if (x < -width) {
-                x = FlxG.width + width - 2;
+                x = FlxG.width + int(width - 3);
             }
             super.update();
         }
