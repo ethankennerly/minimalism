@@ -18,4 +18,14 @@ bike
 crash
 
 
+levels:
+
+png:  set category by color.
+dame:  load each.
+
+words:
+pants::trousers
+
+
+randomly select stimulus on the beat of autotracker.
 

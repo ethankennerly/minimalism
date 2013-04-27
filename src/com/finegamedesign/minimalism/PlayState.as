@@ -11,17 +11,46 @@ package com.finegamedesign.minimalism
         private var player:Player;
         private var enemies:FlxGroup;
         private var gibs:FlxEmitter;
+        private var driftDistance:int = 60;
+        private var driftTime:Number = 0.5;
+        private var middleY:int = 240;
+        private var targetY:int;
+        private var direction:int;
+        private var driftTimer:FlxTimer;
 
         override public function create():void
         {
             FlxG.score = 0;
             // FlxG.visualDebug = true;
             super.create();
-            player = new Player();
+            driftTimer = new FlxTimer();
             enemies = new FlxGroup();
-            addHud();
+            direction = -1;
+            player = new Player(40, middleY + direction * driftDistance);
+            add(player);
             addGibs();
+            addHud();
             state = "play";
+            FlxG.camera.x = 0;
+            FlxG.camera.y = 0;
+        }
+
+        /**
+         * Player drifts to other side.
+         */
+        private function switchLane():void
+        {
+            direction = -direction;
+            targetY = middleY + direction * driftDistance;
+            player.velocity.y = 2 * direction * driftDistance * (1.0 / driftTime);
+            FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
+            driftTimer.start(driftTime, 1, drift);
+        }
+
+        private function drift(timer:FlxTimer):void
+        {
+            player.velocity.y = 0;
+            player.y = targetY;
         }
 
         private function addGibs():void
@@ -40,12 +69,21 @@ package com.finegamedesign.minimalism
         private function addHud():void
         {
             instructionText = new FlxText(0, 0, FlxG.width, 
-                "PRESS SPACEBAR SWITCH SIDES");
+                "CLICK OR PRESS SPACEBAR SWITCH SIDES");
+            instructionText.color = MenuState.textColor;
+            instructionText.scrollFactor.x = 0.0;
+            instructionText.scrollFactor.y = 0.0;
             instructionText.alignment = "center";
             add(instructionText);
             waveText = new FlxText(0, 0, 100, "");
+            waveText.color = MenuState.textColor;
+            waveText.scrollFactor.x = 0.0;
+            waveText.scrollFactor.y = 0.0;
             add(waveText);
             scoreText = new FlxText(FlxG.width - 40, 0, 100, "");
+            scoreText.color = MenuState.textColor;
+            scoreText.scrollFactor.x = 0.0;
+            scoreText.scrollFactor.y = 0.0;
             add(scoreText);
         }
 
@@ -98,8 +136,8 @@ package com.finegamedesign.minimalism
          */ 
         private function updateInput():void
         {
-            if (FlxG.keys.justPressed("SPACE")) {
-                FlxG.log("TODO: Switch side.");
+            if (FlxG.mouse.justPressed() || FlxG.keys.justPressed("SPACE") || FlxG.keys.justPressed("X")) {
+                switchLane();
             }
             if (FlxG.keys.pressed("SHIFT")) {
                 if (FlxG.keys.justPressed("ONE")) {
