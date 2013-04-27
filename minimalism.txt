@@ -1,3 +1,5 @@
+LOG
+10 Trucks moves left in upper screen.
 
 Fri 04/26/2013 
 19:01
