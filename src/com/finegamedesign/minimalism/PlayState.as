@@ -125,33 +125,29 @@ package com.finegamedesign.minimalism
             }
         }
         
-        private function spawnTruck():void
+        private function spawnTruck(ignoredFrame:int):void
         {
             truck = Truck(enemies.getFirstAvailable());
-            placeInRoad(truck, signDirection, 1.5);
+            placeInRoad(truck, signDirection, 1.5, 1.0);
         }
             
-        private function spawnObstacle():void
+        private function spawnObstacle(warningFrame:int):void
         {
             obstacle = Warning(obstacles.getFirstAvailable());
-            placeInRoad(obstacle, -signDirection, 0.5);
+            placeInRoad(obstacle, -signDirection, 0.5, 0.5);
             obstacle.frame = warningFrame;
             obstacle.solid = true;
             FlxG.log("spawnObstacle: velocity " + obstacle.velocity.x);
-            /*-
-            if (Warning.gas == obstacle.frame) {
-                FlxG.timeScale = 0.5;
-                player.solid = true;
-            }
-            -*/
         }
         
-        private function placeInRoad(truck:FlxSprite, signDirection:int, speed:Number):void
+        private function placeInRoad(truck:FlxSprite, signDirection:int, speed:Number, collisionWidthRatio:Number):void
         {
             truck.revive();
             truck.y = middleY + -signDirection * driftDistance - truck.height / 2;
             truck.x = 640 - Math.pow(speed, 1.5) * baseSpawnTime * baseVelocityX;
             truck.velocity.x = speed * velocityX;
+            truck.width = collisionWidthRatio * truck.frameWidth;
+            truck.offset.x = 0.5 * (1.0 - collisionWidthRatio) * truck.frameWidth;
             add(truck);
         }
         
@@ -159,16 +155,6 @@ package com.finegamedesign.minimalism
         {
             distance++;
             FlxG.score += 1;
-            if (winDistance <= distance) {
-                FlxG.timeScale = 1.0;
-                FlxG.score += 1;
-                instructionText.text = "DUNCAN ROBSON AND ETHAN KENNERLY: WELCOME HOME!";
-                stop();
-                state = "win";
-                FlxG.fade(0xFFFFFFFF, 3.0, win);
-                return;
-            }
-            
             if (signDistance <= distance) {
                 var isWarning:Boolean = 20 < distance && Math.random() < 0.25;
                 var isBritain:Boolean = Math.random() < 0.5;
@@ -181,19 +167,14 @@ package com.finegamedesign.minimalism
                 sign.y = FlxG.height / 8 - sign.height / 2;
                 sign.revive();
                 sign.solid = false;
-                var row:int = Math.min(sign.frames / columns - 1, distance * int(sign.frames / columns) / winDistance);
+                var row:int = Math.min(sign.frames / columns - 1, distance * int((sign.frames - 1) / columns) / winDistance);
                 sign.frame = columns * row + (isBritain ? 1 : 0);
                 // FlxG.log("sign row " + row + " frame " + sign.frame + " brit " + isBritain);
                 sign.velocity.x = 0.5 * velocityX;
-                if (isWarning) {
-                    warningFrame = columns * row + 2;
-                    // FlxG.log("warning velocity " + sign.velocity.x);
-                }
-                spawn();
+                warningFrame = columns * row + 2;
+                // FlxG.log("warning velocity " + sign.velocity.x);
+                spawn(warningFrame);
                 signDistance += 12 + Math.random() * 2;
-                if (winDistance - 15 < signDistance) {
-                    signDistance = winDistance + 15;
-                }
                 // FlxG.log("signDistance " + signDistance);
             }
             else if (4 == distance % 5) {
@@ -260,13 +241,20 @@ package com.finegamedesign.minimalism
             progressTimer.stop();
         }
         
-        private function collide(player:FlxObject, enemy:FlxObject):void
+        private function collide(me:FlxObject, you:FlxObject):void
         {
+            var player:FlxSprite = FlxSprite(me);
+            var enemy:FlxSprite = FlxSprite(you);
             if ("play" == state) {
                 if (enemy is FlxSprite && FlxSprite(enemy).frame == Warning.gas) {
-                    instructionText.text = "FUEL UP!";
                     enemy.flicker();
                     enemy.solid = false;
+                    FlxG.timeScale = 1.0;
+                    FlxG.score += 100;
+                    instructionText.text = "YOU MADE IT!  FUEL UP!";
+                    stop();
+                    state = "win";
+                    FlxG.fade(0xFFFFFFFF, 3.0, win);
                 }
                 else {
                     FlxG.timeScale = 1.0;
@@ -274,7 +262,9 @@ package com.finegamedesign.minimalism
                     if (enemy is Truck) {
                         Truck(enemy).play("collide");
                     }
-                    enemy.x = player.x + player.width;
+                    if (player.x + player.width / 2 < enemy.x) {
+                        enemy.x = player.x + player.width - enemy.offset.x;
+                    }
                     FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
                     stop();
                     instructionText.text = "YOU CRASHED";
