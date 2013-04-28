@@ -31,3 +31,20 @@ pants::trousers
 
 randomly select stimulus on the beat of autotracker.
 
+
+warning of something in road may switch tasks and have inhibit response.
+
+sounds: 
+crash
+incoming
+background music
+change lane
+start
+win
+lose
+
+
+kongregate
+
+credits
+
