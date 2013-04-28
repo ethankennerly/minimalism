@@ -6,14 +6,15 @@ package com.finegamedesign.minimalism
     {
         [Embed(source="../../../../gfx/warnings.png")] internal static var Img:Class;
 
-        internal static var gas:int = 8;
+        internal static var gas:int;
         internal static var outOfGas:Function;
         
         public function Warning(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
-            loadGraphic(Img, true, false, 633 / 3, 244 / 3, true);
+            loadGraphic(Img, true, false, 634 / 3, 488 / 6, true);
             solid = false;
+            gas = frames - 1;
         }
         
         override public function update():void 

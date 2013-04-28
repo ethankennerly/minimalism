@@ -175,6 +175,9 @@ package com.finegamedesign.minimalism
                 // FlxG.log("warning velocity " + sign.velocity.x);
                 spawn(warningFrame);
                 signDistance += 12 + Math.random() * 2;
+                if (warningFrame == Warning.gas) {
+                    
+                }
                 // FlxG.log("signDistance " + signDistance);
             }
             else if (4 == distance % 5) {
