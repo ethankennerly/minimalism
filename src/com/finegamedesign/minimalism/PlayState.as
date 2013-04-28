@@ -137,7 +137,7 @@ package com.finegamedesign.minimalism
             placeInRoad(obstacle, -signDirection, 0.5, 0.5);
             obstacle.frame = warningFrame;
             obstacle.solid = true;
-            FlxG.log("spawnObstacle: velocity " + obstacle.velocity.x);
+            FlxG.log("spawn wf " + warningFrame);
         }
         
         private function placeInRoad(truck:FlxSprite, signDirection:int, speed:Number, collisionWidthRatio:Number):void
@@ -167,16 +167,19 @@ package com.finegamedesign.minimalism
                 sign.y = FlxG.height / 8 - sign.height / 2;
                 sign.revive();
                 sign.solid = false;
-                var row:int = Math.min(sign.frames / columns - 1, distance * int((sign.frames - 1) / columns) / winDistance);
+                var row:int = Math.min(sign.frames / columns - 1, 
+                    int((sign.frames - 1) / columns) * distance / winDistance);
                 sign.frame = columns * row + (isBritain ? 1 : 0);
-                // FlxG.log("sign row " + row + " frame " + sign.frame + " brit " + isBritain);
                 sign.velocity.x = 0.5 * velocityX;
                 warningFrame = columns * row + 2;
+                if (isWarning) {
+                    FlxG.log("sign r " + row + " f " + sign.frame + " b " + isBritain + " wf " + warningFrame);
+                }
                 // FlxG.log("warning velocity " + sign.velocity.x);
                 spawn(warningFrame);
                 signDistance += 12 + Math.random() * 2;
                 if (warningFrame == Warning.gas) {
-                    
+                    signDistance += winDistance;
                 }
                 // FlxG.log("signDistance " + signDistance);
             }

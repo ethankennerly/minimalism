@@ -4,7 +4,7 @@ LOG
 TODO
 tune
 cohere
-gas
+remove gas from signs.
 sounds
 title screen help image
 kongregate

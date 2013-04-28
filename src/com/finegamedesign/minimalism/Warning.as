@@ -1,5 +1,6 @@
 package com.finegamedesign.minimalism
 {
+    import flash.display.Bitmap;
     import org.flixel.*;
 
     public class Warning extends FlxSprite
@@ -12,7 +13,7 @@ package com.finegamedesign.minimalism
         public function Warning(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
-            loadGraphic(Img, true, false, 634 / 3, 488 / 6, true);
+            loadGraphic(Img, true, false, 630 / 3, 81, true);
             solid = false;
             gas = frames - 1;
         }
