@@ -1,6 +1,19 @@
 LOG
 10 Trucks moves left in upper screen.
 
+TODO
+tune
+cohere
+gas
+sounds
+title screen help image
+kongregate
+name
+submit
+credits
+
+
+
 Fri 04/26/2013 
 19:01
 
@@ -44,7 +57,12 @@ win
 lose
 
 
-kongregate
+Sun 04/28/2013 
+09:55
 
-credits
+above road see rubbish.  in road see truck.  feel confused.
+how can i feel alert?
+above road see rubbish.  in road see rubbish.  feel alert?
+above road see rubbish.  in road see truck with rubbish.  feel alert?
+above road see rubbish.  in road see rubbish on wheels.  feel alert?
 
