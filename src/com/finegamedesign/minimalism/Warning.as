@@ -2,13 +2,14 @@ package com.finegamedesign.minimalism
 {
     import org.flixel.*;
 
-    public class Usa extends FlxSprite
+    public class Warning extends FlxSprite
     {
-        [Embed(source="../../../../gfx/usa.png")] internal static var Img:Class;
+        [Embed(source="../../../../gfx/warnings.png")] internal static var Img:Class;
 
-        public function Usa(X:int = 0, Y:int = 0, ImgClass:Class = null) 
+        public function Warning(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
+            loadGraphic(Img, true, false, 633 / 3, 244 / 3, true);
             solid = false;
         }
         

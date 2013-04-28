@@ -31,6 +31,7 @@ package com.finegamedesign.minimalism
                 + "\nTo start, CLICK or press SPACE."
                 + "\n\nScore " + FlxG.score
                 + "\nHigh Score " + Math.max.apply(null, FlxG.scores)
+                + "\n\nGuess which nation you are in by the colloquial word on the sign."
                 );
             t.color = textColor;
             t.size = 14;

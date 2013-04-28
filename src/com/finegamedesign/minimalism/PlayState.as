@@ -32,10 +32,9 @@ package com.finegamedesign.minimalism
         private var progressTime:Number;
         private var distance:int;
         private var signDistance:int;
-        private var usas:FlxGroup;
-        private var usa:Usa;
-        private var britains:FlxGroup;
-        private var britain:Britain;
+        private var warnings:FlxGroup;
+        private var warningFrame:int;
+        private var warning:Warning;
         private var signs:FlxGroup;
         private var sign:FlxSprite;
 
@@ -52,20 +51,13 @@ package com.finegamedesign.minimalism
                 roads.add(road);
             }
             add(roads);
-            usas = new FlxGroup();
-            for (var concurrentUsa:int = 0; concurrentUsa < 1; concurrentUsa++) {
-                usa = new Usa();
-                usa.exists = false;
-                usas.add(usa);
+            warnings = new FlxGroup();
+            for (var concurrentWarning:int = 0; concurrentWarning < 4; concurrentWarning++) {
+                warning = new Warning();
+                warning.exists = false;
+                warnings.add(warning);
             }
-            add(usas);
-            britains = new FlxGroup();
-            for (var concurrentBritain:int = 0; concurrentBritain < 1; concurrentBritain++) {
-                britain = new Britain();
-                britain.exists = false;
-                britains.add(britain);
-            }
-            add(britains);
+            add(warnings);
             signs = new FlxGroup();
             for (var concurrentSigns:int = 0; concurrentSigns < 4; concurrentSigns++) {
                 sign = new Sign();
@@ -129,10 +121,24 @@ package com.finegamedesign.minimalism
         private function spawnTruck(timer:FlxTimer):void
         {
             truck = Truck(enemies.getFirstAvailable());
+            truck.velocity.x = 2 * velocityX;
+            placeInRoad(truck, signDirection);
+        }
+            
+        private function spawnWarning(timer:FlxTimer):void
+        {
+            warning = Warning(warnings.getFirstAvailable());
+            warning.frame = warningFrame;
+            warning.solid = true;
+            warning.velocity.x = 0.5 * velocityX;
+            placeInRoad(warning, -signDirection);
+        }
+        
+        private function placeInRoad(truck:FlxSprite, signDirection:int):void
+        {
             truck.revive();
             truck.y = middleY + -signDirection * driftDistance - truck.height / 2;
             truck.x = 640;
-            truck.velocity.x = 2 * velocityX;
             add(truck);
         }
         
@@ -151,17 +157,23 @@ package com.finegamedesign.minimalism
             
             if (signDistance <= distance) {
                 spawnTimer.stop();
+                var isWarning:Boolean = 0.5 <= Math.random();
                 var isBritain:Boolean = 0.5 <= Math.random();
                 signDirection = isBritain ? -1 : 1;
-                sign = FlxSprite(signs.getFirstAvailable());
+                var group:FlxGroup = isWarning ? warnings : signs;
+                var columns:int = isWarning ? 3 : 2;
+                var spawn:Function = isWarning ? spawnWarning : spawnTruck;
+                sign = FlxSprite(group.getFirstAvailable());
                 sign.x = FlxG.width;
                 sign.y = FlxG.height / 8 - sign.height / 2;
                 sign.revive();
-                var row:int = Math.min(sign.frames - 2, distance * int(sign.frames / 2) / 256);
-                sign.frame = 2 * row + (isBritain ? 1 : 0);
+                sign.solid = false;
+                var row:int = Math.min(sign.frames - columns, distance * int(sign.frames / columns) / 256);
+                sign.frame = columns * row + (isBritain ? 1 : 0);
+                warningFrame = sign.frame + (isBritain ? 1 : 2);
                 FlxG.log("sign row " + row + " frame " + sign.frame + " brit " + isBritain);
                 sign.velocity.x = 0.5 * velocityX;
-                spawnTimer.start(spawnTime, 1, spawnTruck);
+                spawnTimer.start(spawnTime, 1, spawn);
                 signDistance += 10 + FlxG.random() * 2;
                 // FlxG.log("signDistance " + signDistance);
             }
@@ -233,7 +245,9 @@ package com.finegamedesign.minimalism
         {
             if ("play" == state) {
                 Player(player).play("collide");
-                Truck(enemy).play("collide");
+                if (enemy is Truck) {
+                    Truck(enemy).play("collide");
+                }
                 enemy.x = player.x + player.width;
                 stop();
                 instructionText.text = "YOU CRASHED";
@@ -252,11 +266,8 @@ package com.finegamedesign.minimalism
             for each (truck in enemies.members) {
                 truck.velocity.x = 2 * v;
             }
-            for each (usa in usas.members) {
-                usa.velocity.x = 0.5 * v;
-            }
-            for each (britain in britains.members) {
-                britain.velocity.x = 0.5 * v;
+            for each (warning in warnings.members) {
+                warning.velocity.x = 0.5 * v;
             }
             for each (sign in signs.members) {
                 sign.velocity.x = 0.5 * v;
