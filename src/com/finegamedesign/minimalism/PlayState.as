@@ -155,9 +155,9 @@ package com.finegamedesign.minimalism
                 if (null != sign) {
                     // FlxG.log("progress: " + sign);
                     sign.x = FlxG.width;
-                    sign.y = FlxG.height / 6;
+                    sign.y = FlxG.height / 8 - sign.height / 2;
                     sign.revive();
-                    sign.velocity.x = velocityX;
+                    sign.velocity.x = 0.5 * velocityX;
                     spawnTimer.start(spawnTime, 1, spawnTruck);
                     signDistance += 8 + FlxG.random() * 2;
                     FlxG.log("signDistance " + signDistance);
@@ -244,16 +244,16 @@ package com.finegamedesign.minimalism
         {
             velocityX = v;
             for each (road in roads.members) {
-                road.velocity.x = v;
+                road.velocity.x = 0.5 * v;
             }
             for each (truck in enemies.members) {
                 truck.velocity.x = 2 * v;
             }
             for each (usa in usas.members) {
-                usa.velocity.x = v;
+                usa.velocity.x = 0.5 * v;
             }
             for each (britain in britains.members) {
-                britain.velocity.x = v;
+                britain.velocity.x = 0.5 * v;
             }
             spawnTime = baseSpawnTime * baseVelocityX / Math.min(-0.0625, v);
             progressTime = baseProgressTime * baseVelocityX / Math.min( -0.0625, v);

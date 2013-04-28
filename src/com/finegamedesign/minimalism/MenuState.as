@@ -1,7 +1,7 @@
 package com.finegamedesign.minimalism
 {
     import org.flixel.*;
-
+    
     public class MenuState extends FlxState
     {
         public static var textColor:uint = 0x000000;
@@ -9,6 +9,7 @@ package com.finegamedesign.minimalism
         override public function create():void
         {
             super.create();
+            FlxG.stage.frameRate = 60;
             FlxG.bgColor = 0xFFFFFF00;
             if (null == FlxG.scores || FlxG.scores.length <= 0) {
                 FlxG.scores = [0];
