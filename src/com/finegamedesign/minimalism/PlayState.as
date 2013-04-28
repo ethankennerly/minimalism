@@ -260,6 +260,7 @@ package com.finegamedesign.minimalism
                 if (player.x + player.width / 2 < enemy.x) {
                     enemy.x = player.x + player.width - enemy.offset.x;
                 }
+                FlxG.play(Sounds.explosion);
                 FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
                 stop();
                 instructionText.text = "YOU CRASHED";
