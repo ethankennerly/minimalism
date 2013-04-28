@@ -1,5 +1,6 @@
 package com.finegamedesign.minimalism
 {
+    import flash.utils.Dictionary;
     import org.flixel.*;
    
     public class PlayState extends FlxState
@@ -12,54 +13,73 @@ package com.finegamedesign.minimalism
         private var enemies:FlxGroup;
         private var gibs:FlxEmitter;
         private var driftDistance:int = 60;
-        private var driftTime:Number = 0.5;
+        private var driftTime:Number = 0.25;
         private var middleY:int = 240;
         private var targetY:int;
         private var direction:int;
         private var signDirection:int;
-        private var driftTimer:FlxTimer;
         private var truck:Truck;
-        private var velocityX:int = -160;
+        private var baseVelocityX:int = -160;
+        private var velocityX:int;
         private var road:Road;
         private var roads:FlxGroup;
         private var spawnTimer:FlxTimer;
-        private var spawnTime:Number = 2.0;
+        private var baseSpawnTime:Number = 2.0;
+        private var spawnTime:Number;
         private var progressTimer:FlxTimer;
-        private var progressTime:Number = 1.0;
+        private var baseProgressTime:Number = 1.0;
+        private var progressTime:Number;
         private var distance:int;
+        private var usas:FlxGroup;
+        private var usa:Usa;
+        private var britains:FlxGroup;
+        private var britain:Britain;
 
         override public function create():void
         {
             FlxG.score = 0;
             // FlxG.visualDebug = true;
             super.create();
-            driftTimer = new FlxTimer();
             roads = new FlxGroup();
             road = new Road();
             var roadY:int = middleY - road.height / 2;
             for (var roadX:int = 0; roadX < FlxG.width + 2 * road.width; roadX += int(road.width - 3)) {
                 road = new Road(roadX, roadY);
-                road.velocity.x = velocityX;
                 roads.add(road);
             }
             add(roads);
+            usas = new FlxGroup();
+            for (var concurrentUsa:int = 0; concurrentUsa < 2; concurrentUsa++) {
+                usa = new Usa();
+                usa.exists = false;
+                usas.add(usa);
+            }
+            add(usas);
+            britains = new FlxGroup();
+            for (var concurrentBritain:int = 0; concurrentBritain < 2; concurrentBritain++) {
+                britain = new Britain();
+                britain.exists = false;
+                britains.add(britain);
+            }
+            add(britains);
             enemies = new FlxGroup();
             for (var concurrentTruck:int = 0; concurrentTruck < 2; concurrentTruck++) {
                 truck = new Truck();
                 truck.exists = false;
+                enemies.add(truck);
             }
-            enemies.add(truck);
             spawnTimer = new FlxTimer();
-            spawnTimer.start(spawnTime, 9, spawnTruck);
             progressTimer = new FlxTimer();
-            progressTimer.start(progressTime, 9, progress);
+            distance = 0;
             direction = 1;
             signDirection = 1;
             player = new Player(40, middleY + direction * driftDistance);
+            player.y -= player.height / 2;
             targetY = middleY + direction * driftDistance;
             add(player);
-            addGibs();
             addHud();
+            setVelocityX(baseVelocityX);
+            progressTimer.start(progressTime, int.MAX_VALUE, progress);
             state = "play";
         }
 
@@ -68,20 +88,28 @@ package com.finegamedesign.minimalism
          */
         private function switchLane():void
         {
-            // driftTimer.stop();
             direction = -direction;
-            targetY = middleY + direction * driftDistance;
+            var directions:Dictionary = new Dictionary();
+            directions[-1] = "left";
+            directions[1] = "right";
+            player.play(directions[direction]);
+            targetY = middleY + direction * driftDistance - player.height / 2;
             player.velocity.y = 2 * direction * driftDistance * (1.0 / driftTime);
-            FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
-            // driftTimer.start(Math.abs(targetY - player.y) / driftDistance * driftTime, 1, drift);
+            // FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
         }
 
         private function mayStopDrift():void
         {
-            if (direction < 0 && player.y <= targetY
-                    || 0 < direction && targetY <= player.y) {
+            if ("play" == state) {
+                if (direction < 0 && player.y <= targetY
+                        || 0 < direction && targetY <= player.y) {
+                    player.velocity.y = 0;
+                    player.y = targetY;
+                    player.play("idle");
+                }
+            }
+            else if ("lose" == state) {
                 player.velocity.y = 0;
-                player.y = targetY;
             }
         }
         
@@ -89,7 +117,7 @@ package com.finegamedesign.minimalism
         {
             truck = Truck(enemies.getFirstAvailable());
             truck.revive();
-            truck.y = middleY + -signDirection * driftDistance;
+            truck.y = middleY + -signDirection * driftDistance - truck.height / 2;
             truck.x = 640;
             truck.velocity.x = 2 * velocityX;
             add(truck);
@@ -99,21 +127,35 @@ package com.finegamedesign.minimalism
         {
             distance++;
             FlxG.score += 100;
+            if (99 <= distance) {
+                FlxG.score += 100;
+                instructionText.text = "YOU MADE IT!  WELCOME HOME.";
+                stop();
+                state = "win";
+                FlxG.fade(0xFFFFFFFF, 3.0, win);
+                return;
+            }
+            
+            var sprite:FlxSprite;
+            if (3 == distance % 10) {
+                signDirection = 1;
+                sprite = FlxSprite(usas.getFirstAvailable());
+            }
+            else if (6 == distance % 10) {
+                signDirection = -1;
+                sprite = FlxSprite(britains.getFirstAvailable());
+            }
+            else if (9 == distance % 10) {
+                setVelocityX(velocityX - 120);
+            }
+            if (null != sprite) {
+                FlxG.log("progress: " + sprite);
+                sprite.reset(FlxG.width, FlxG.height / 5);
+                sprite.velocity.x = velocityX;
+                spawnTimer.start(spawnTime, 2, spawnTruck);
+            }
         }
         
-        private function addGibs():void
-        {
-            gibs = new FlxEmitter();
-		    gibs.makeParticles(Player.Img, 50, 32, false, 0.5);
-            gibs.gravity = 376;
-            gibs.setRotation(0, 0);
-            gibs.bounce = 0.25;
-		    gibs.setXSpeed(-150, 150);
-            gibs.particleDrag = new FlxPoint(50, 0);
-            gibs.setSize(2, 2);
-            add(gibs);
-        }
-
         private function addHud():void
         {
             instructionText = new FlxText(0, 0, FlxG.width, 
@@ -149,17 +191,6 @@ package com.finegamedesign.minimalism
         {
             if ("play" == state) {
                 scoreText.text = "DISTANCE " + FlxG.score.toString();
-                if (player.health <= 0) {
-                    state = "lose";
-                    instructionText.text = "YOU LOST";
-                    FlxG.fade(0xFF000000, 3.0, lose);
-                }
-                else if (10 <= distance) {
-                    FlxG.score += 100;
-                    instructionText.text = "YOU WON";
-                    state = "win";
-                    FlxG.fade(0xFFFFFFFF, 3.0, win);
-                }
             }
         }
 
@@ -170,15 +201,48 @@ package com.finegamedesign.minimalism
 
         private function win():void
         {
+            setVelocityX(0);
             FlxG.switchState(new MenuState());
         }
-   
+
+        private function stop():void
+        {
+            setVelocityX(0);
+            spawnTimer.stop();
+            progressTimer.stop();
+        }
+        
         private function collide(player:FlxObject, enemy:FlxObject):void
         {
-            player.hurt(1);
-            enemy.hurt(1);
+            if ("play" == state) {
+                Player(player).play("collide");
+                stop();
+                instructionText.text = "YOU CRASHED";
+                FlxG.fade(0xFF000000, 3.0, lose);
+                FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
+                state = "lose";
+            }
         }
 
+        private function setVelocityX(v:int):void
+        {
+            velocityX = v;
+            for each (road in roads.members) {
+                road.velocity.x = v;
+            }
+            for each (truck in enemies.members) {
+                truck.velocity.x = 2 * v;
+            }
+            for each (usa in usas.members) {
+                usa.velocity.x = v;
+            }
+            for each (britain in britains.members) {
+                britain.velocity.x = v;
+            }
+            spawnTime = baseSpawnTime * baseVelocityX / Math.min(-0.0625, v);
+            progressTime = baseProgressTime * baseVelocityX / Math.min(-0.0625, v);
+        }
+        
         /**
          * Press SPACE, or click mouse.
          * To make it harder, play 2x speed: press Shift+2.  
@@ -186,8 +250,10 @@ package com.finegamedesign.minimalism
          */ 
         private function updateInput():void
         {
-            if (FlxG.mouse.justPressed() || FlxG.keys.justPressed("SPACE") || FlxG.keys.justPressed("X")) {
-                switchLane();
+            if ("play" == state) {
+                if (FlxG.mouse.justPressed() || FlxG.keys.justPressed("SPACE") || FlxG.keys.justPressed("X")) {
+                    switchLane();
+                }
             }
             if (FlxG.keys.pressed("SHIFT")) {
                 if (FlxG.keys.justPressed("ONE")) {
