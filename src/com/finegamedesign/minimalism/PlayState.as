@@ -1,6 +1,7 @@
 package com.finegamedesign.minimalism
 {
     import flash.utils.Dictionary;
+    import flash.utils.getTimer;
     import org.flixel.*;
    
     public class PlayState extends FlxState
@@ -39,7 +40,7 @@ package com.finegamedesign.minimalism
         override public function create():void
         {
             FlxG.score = 0;
-            FlxG.visualDebug = true;
+            // FlxG.visualDebug = true;
             super.create();
             roads = new FlxGroup();
             road = new Road();
@@ -50,14 +51,14 @@ package com.finegamedesign.minimalism
             }
             add(roads);
             usas = new FlxGroup();
-            for (var concurrentUsa:int = 0; concurrentUsa < 2; concurrentUsa++) {
+            for (var concurrentUsa:int = 0; concurrentUsa < 1; concurrentUsa++) {
                 usa = new Usa();
                 usa.exists = false;
                 usas.add(usa);
             }
             add(usas);
             britains = new FlxGroup();
-            for (var concurrentBritain:int = 0; concurrentBritain < 2; concurrentBritain++) {
+            for (var concurrentBritain:int = 0; concurrentBritain < 1; concurrentBritain++) {
                 britain = new Britain();
                 britain.exists = false;
                 britains.add(britain);
@@ -81,6 +82,8 @@ package com.finegamedesign.minimalism
             add(player);
             addHud();
             setVelocityX(baseVelocityX);
+            FlxG.globalSeed = getTimer();
+            progressTimer.start(progressTime, 1, progress);
             state = "play";
         }
 
@@ -127,9 +130,9 @@ package com.finegamedesign.minimalism
         private function progress(timer:FlxTimer):void
         {
             distance++;
-            FlxG.score += 100;
-            if (99 <= distance) {
-                FlxG.score += 100;
+            FlxG.score += 1;
+            if (255 <= distance) {
+                FlxG.score += 1;
                 instructionText.text = "YOU MADE IT!  WELCOME HOME.";
                 stop();
                 state = "win";
@@ -138,8 +141,9 @@ package com.finegamedesign.minimalism
             }
             
             if (signDistance <= distance) {
+                spawnTimer.stop();
                 var sign:FlxSprite;
-                var isBritain:Boolean = FlxG.random() < 0.5;
+                var isBritain:Boolean = 0.5 <= Math.random();
                 if (isBritain) {
                     signDirection = -1;
                     sign = FlxSprite(britains.getFirstAvailable());
@@ -150,18 +154,21 @@ package com.finegamedesign.minimalism
                 }
                 if (null != sign) {
                     // FlxG.log("progress: " + sign);
-                    sign.reset(FlxG.width, FlxG.height / 5);
+                    sign.x = FlxG.width;
+                    sign.y = FlxG.height / 6;
+                    sign.revive();
                     sign.velocity.x = velocityX;
-                    spawnTimer.stop();
-                    spawnTimer.start(spawnTime, 2, spawnTruck);
+                    spawnTimer.start(spawnTime, 1, spawnTruck);
+                    signDistance += 8 + FlxG.random() * 2;
+                    FlxG.log("signDistance " + signDistance);
                 }
-                signDistance += 8 + FlxG.random() * 4;
             }
-            if (4 == distance % 5) {
-                if (-1280 < velocityX) {
+            else if (4 == distance % 5) {
+                if (-640 < velocityX) {
                     setVelocityX(velocityX - 120);
                 }
             }
+            progressTimer.start(progressTime, 1, progress);
         }
         
         private function addHud():void
@@ -250,9 +257,7 @@ package com.finegamedesign.minimalism
             }
             spawnTime = baseSpawnTime * baseVelocityX / Math.min(-0.0625, v);
             progressTime = baseProgressTime * baseVelocityX / Math.min( -0.0625, v);
-            progressTimer.stop();
-            progressTimer.start(progressTime, int.MAX_VALUE, progress);
-            FlxG.log("setVelocityX: spawn " + spawnTime + " progress " + progressTime);
+            // FlxG.log("setVelocityX: spawn " + spawnTime + " progress " + progressTime);
         }
         
         /**

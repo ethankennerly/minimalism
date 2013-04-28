@@ -11,5 +11,13 @@ package com.finegamedesign.minimalism
             super(X, Y, Img);
             solid = false;
         }
+        
+        override public function update():void 
+        {
+            if (x < -width) {
+                kill();
+            }
+            super.update();
+        }
     }
 }
