@@ -9,14 +9,13 @@ package com.finegamedesign.minimalism
         public function Road(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
-            drag.y = 0;
-            acceleration.y = 0;
+            solid = false;
         }
         
         override public function update():void 
         {
             if (x < -width) {
-                x = FlxG.width + int(width - 3);
+                x += FlxG.width + 2 * int(width - 3);
             }
             super.update();
         }

@@ -24,8 +24,8 @@ package com.finegamedesign.minimalism
             t.alignment = "center";
             add(t);
             t = new FlxText(0,FlxG.height/3, FlxG.width,
-                "In Britain, drive on the TOP."
-                + "\nIn America, drive on the BOTTOM."
+                "In BRITAIN, drive on the LEFT."
+                + "\nIn USA, drive on the RIGHT."
                 + "\nTo switch sides of the road, CLICK or press SPACE."
                 + "\nTo start, CLICK or press SPACE."
                 + "\n\nScore " + FlxG.score
@@ -35,8 +35,6 @@ package com.finegamedesign.minimalism
             t.size = 14;
             t.alignment = "center";
             add(t);
-            
-            // FlxG.mouse.show();
         }
 
         override public function update():void
@@ -45,7 +43,6 @@ package com.finegamedesign.minimalism
 
             if(FlxG.mouse.justReleased() || FlxG.keys.justReleased("SPACE") || FlxG.keys.justPressed("X"))
             {
-                // FlxG.mouse.hide();
                 FlxG.switchState(new PlayState());
             }
         }

@@ -9,8 +9,8 @@ package com.finegamedesign.minimalism
         public function Player(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
-            drag.y = 0;
-            acceleration.y = 0;
+            width *= 0.5;
+            height *= 0.5;
             loadGraphic(Img, true, false, 129, 46, true);
             addAnimation("left", [0], 30, true);
             addAnimation("right", [1], 30, true);

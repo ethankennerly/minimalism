@@ -9,6 +9,7 @@ package com.finegamedesign.minimalism
         public function Usa(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
+            solid = false;
         }
         
         override public function update():void 
