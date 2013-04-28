@@ -2,10 +2,11 @@ LOG
 10 Trucks moves left in upper screen.
 
 TODO
+sounds
+4 frame signs
 tune
 cohere
 remove gas from signs.
-sounds
 title screen help image
 kongregate
 name

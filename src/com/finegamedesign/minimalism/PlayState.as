@@ -91,7 +91,7 @@ package com.finegamedesign.minimalism
             addHud();
             setVelocityX(baseVelocityX);
             progressTimer.start(progressTime, 1, progress);
-            Warning.outOfGas = outOfGas;
+            Warning.fuelUp = fuelUp;
             state = "play";
         }
 
@@ -184,8 +184,8 @@ package com.finegamedesign.minimalism
                 // FlxG.log("signDistance " + signDistance);
             }
             else if (4 == distance % 5) {
-                if (-640 < velocityX) {
-                    setVelocityX(velocityX - 60);
+                if (2 * -640 < velocityX) {
+                    setVelocityX(velocityX - 100);
                 }
             }
             progressTimer.start(progressTime, 1, progress);
@@ -252,41 +252,31 @@ package com.finegamedesign.minimalism
             var player:FlxSprite = FlxSprite(me);
             var enemy:FlxSprite = FlxSprite(you);
             if ("play" == state) {
-                if (enemy is FlxSprite && FlxSprite(enemy).frame == Warning.gas) {
-                    enemy.flicker();
-                    enemy.solid = false;
-                    FlxG.timeScale = 1.0;
-                    FlxG.score += 100;
-                    instructionText.text = "YOU MADE IT!  FUEL UP!";
-                    stop();
-                    state = "win";
-                    FlxG.fade(0xFFFFFFFF, 3.0, win);
+                FlxG.timeScale = 1.0;
+                Player(player).play("collide");
+                if (enemy is Truck) {
+                    Truck(enemy).play("collide");
                 }
-                else {
-                    FlxG.timeScale = 1.0;
-                    Player(player).play("collide");
-                    if (enemy is Truck) {
-                        Truck(enemy).play("collide");
-                    }
-                    if (player.x + player.width / 2 < enemy.x) {
-                        enemy.x = player.x + player.width - enemy.offset.x;
-                    }
-                    FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
-                    stop();
-                    instructionText.text = "YOU CRASHED";
-                    FlxG.fade(0xFF000000, 3.0, lose);
-                    state = "lose";
+                if (player.x + player.width / 2 < enemy.x) {
+                    enemy.x = player.x + player.width - enemy.offset.x;
                 }
+                FlxG.play(Sounds.explosion);
+                FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
+                stop();
+                instructionText.text = "YOU CRASHED";
+                FlxG.fade(0xFF000000, 3.0, lose);
+                state = "lose";
             }
         }
 
-        private function outOfGas():void
+        private function fuelUp():void
         {
             FlxG.timeScale = 1.0;
+            FlxG.score += 100;
+            instructionText.text = "YOU MADE IT!  FUEL UP!";
             stop();
-            instructionText.text = "OUT OF GAS";
-            FlxG.fade(0xFF000000, 3.0, lose);
-            state = "lose";
+            state = "win";
+            FlxG.fade(0xFFFFFFFF, 3.0, win);
         }
         
         private function setVelocityX(v:int):void
