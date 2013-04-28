@@ -36,6 +36,8 @@ package com.finegamedesign.minimalism
         private var usa:Usa;
         private var britains:FlxGroup;
         private var britain:Britain;
+        private var signs:FlxGroup;
+        private var sign:FlxSprite;
 
         override public function create():void
         {
@@ -64,6 +66,13 @@ package com.finegamedesign.minimalism
                 britains.add(britain);
             }
             add(britains);
+            signs = new FlxGroup();
+            for (var concurrentSigns:int = 0; concurrentSigns < 4; concurrentSigns++) {
+                sign = new Sign();
+                sign.exists = false;
+                signs.add(sign);
+            }
+            add(signs);
             enemies = new FlxGroup();
             for (var concurrentTruck:int = 0; concurrentTruck < 2; concurrentTruck++) {
                 truck = new Truck();
@@ -142,30 +151,23 @@ package com.finegamedesign.minimalism
             
             if (signDistance <= distance) {
                 spawnTimer.stop();
-                var sign:FlxSprite;
                 var isBritain:Boolean = 0.5 <= Math.random();
-                if (isBritain) {
-                    signDirection = -1;
-                    sign = FlxSprite(britains.getFirstAvailable());
-                }
-                else {
-                    signDirection = 1;
-                    sign = FlxSprite(usas.getFirstAvailable());
-                }
-                if (null != sign) {
-                    // FlxG.log("progress: " + sign);
-                    sign.x = FlxG.width;
-                    sign.y = FlxG.height / 8 - sign.height / 2;
-                    sign.revive();
-                    sign.velocity.x = 0.5 * velocityX;
-                    spawnTimer.start(spawnTime, 1, spawnTruck);
-                    signDistance += 8 + FlxG.random() * 2;
-                    FlxG.log("signDistance " + signDistance);
-                }
+                signDirection = isBritain ? -1 : 1;
+                sign = FlxSprite(signs.getFirstAvailable());
+                sign.x = FlxG.width;
+                sign.y = FlxG.height / 8 - sign.height / 2;
+                sign.revive();
+                var row:int = Math.min(sign.frames - 2, distance * int(sign.frames / 2) / 256);
+                sign.frame = 2 * row + (isBritain ? 1 : 0);
+                FlxG.log("sign row " + row + " frame " + sign.frame + " brit " + isBritain);
+                sign.velocity.x = 0.5 * velocityX;
+                spawnTimer.start(spawnTime, 1, spawnTruck);
+                signDistance += 10 + FlxG.random() * 2;
+                // FlxG.log("signDistance " + signDistance);
             }
             else if (4 == distance % 5) {
                 if (-640 < velocityX) {
-                    setVelocityX(velocityX - 120);
+                    setVelocityX(velocityX - 60);
                 }
             }
             progressTimer.start(progressTime, 1, progress);
@@ -231,6 +233,7 @@ package com.finegamedesign.minimalism
         {
             if ("play" == state) {
                 Player(player).play("collide");
+                Truck(enemy).play("collide");
                 enemy.x = player.x + player.width;
                 stop();
                 instructionText.text = "YOU CRASHED";
@@ -254,6 +257,9 @@ package com.finegamedesign.minimalism
             }
             for each (britain in britains.members) {
                 britain.velocity.x = 0.5 * v;
+            }
+            for each (sign in signs.members) {
+                sign.velocity.x = 0.5 * v;
             }
             spawnTime = baseSpawnTime * baseVelocityX / Math.min(-0.0625, v);
             progressTime = baseProgressTime * baseVelocityX / Math.min( -0.0625, v);
