@@ -193,7 +193,7 @@ package com.finegamedesign.minimalism
                 }
                 // FlxG.log("signDistance " + signDistance);
             }
-            else if (3 == distance % 4) {
+            else if (7 == distance % 8) {
                 if (2 * -640 < velocityX) {
                     setVelocityX(velocityX - 60);
                     FlxG.log("speed up " + velocityX);

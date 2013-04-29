@@ -33,8 +33,8 @@ package com.finegamedesign.minimalism
                 + "\nTo start, CLICK or press SPACE."
                 + "\n\nScore " + FlxG.score
                 + "\nHigh Score " + Math.max.apply(null, FlxG.scores)
-                + "\n\nRead WHITE sign.  Guess nation.  Switch lane."
-                + "\nRead BLACK warning.  Guess nation.  Pass obstacles."
+                + "\n\nWHITE sign:  Oncoming traffic in opposing lane."
+                + "\nBLACK warning: Obstacle in lane of travel."
                 );
             t.color = textColor;
             t.size = 14;
