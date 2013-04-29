@@ -36,13 +36,12 @@ package com.finegamedesign.minimalism
         private var obstacle:Warning;
         private var signs:FlxGroup;
         private var sign:FlxSprite;
-        private var winDistance:int = 256;
+        private var levelDistance:int = 256;
 
         override public function create():void
         {
             super.create();
             // FlxG.visualDebug = true;
-            FlxG.score = 0;
             FlxG.worldBounds = new FlxRect(0, 100, 320, 380);
             roads = new FlxGroup();
             road = new Road();
@@ -80,7 +79,6 @@ package com.finegamedesign.minimalism
                 enemies.add(truck);
             }
             progressTimer = new FlxTimer();
-            distance = 0;
             direction = 1;
             signDirection = 1;
             signDistance = 5;
@@ -89,7 +87,17 @@ package com.finegamedesign.minimalism
             targetY = middleY + direction * driftDistance;
             add(player);
             addHud();
-            setVelocityX(baseVelocityX);
+            if (FlxG.score < levelDistance * 2) {
+                FlxG.score = Math.max(0, FlxG.score - levelDistance / 3);
+                distance = FlxG.score;
+            }
+            else {
+                distance = levelDistance;
+                FlxG.score = levelDistance;
+                FlxG.timeScale = 2.0;
+                FlxG.log("Double speed");
+            }
+            setVelocityXByDistance(distance);
             progressTimer.start(progressTime, 1, progress);
             Warning.fuelUp = fuelUp;
             state = "play";
@@ -154,6 +162,17 @@ package com.finegamedesign.minimalism
             add(truck);
         }
 
+        private function setVelocityXByDistance(distance:int):void
+        {
+            var minVelocityX:int = -640;
+            if (minVelocityX < velocityX) {
+                setVelocityX(
+                    Math.max(minVelocityX,
+                        int(distance / levelDistance * (minVelocityX - baseVelocityX) + baseVelocityX)));
+                FlxG.log("speed up " + velocityX);
+            }
+        }
+        
         private function progress(timer:FlxTimer):void
         {
             distance++;
@@ -162,8 +181,10 @@ package com.finegamedesign.minimalism
                 return;
             }
             if (signDistance <= distance) {
-                var warningDistance:int = 40;
-                var isWarning:Boolean = warningDistance < distance && Math.random() < 0.25;
+                setVelocityXByDistance(distance);
+                var warningDistance:int = levelDistance / 2;
+                var isWarning:Boolean = warningDistance < distance 
+                    && (levelDistance * 2 <= distance || distance < warningDistance + 60 || Math.random() < 0.25);
                 var isBritain:Boolean = Math.random() < 0.5;
                 signDirection = isBritain ? -1 : 1;
                 var group:FlxGroup = isWarning ? warnings : signs;
@@ -175,29 +196,34 @@ package com.finegamedesign.minimalism
                 sign.revive();
                 sign.solid = false;
                 var firstDistance:int = isWarning ? warningDistance : 0;
-                // var progression:Number = (distance - firstDistance) / (winDistance - firstDistance);
-                var progression:Number = distance / winDistance;
+                var progression:Number = (distance - firstDistance) / (levelDistance - firstDistance);
+                if (levelDistance < distance && distance < levelDistance * 2) {
+                    progression = Math.random();
+                }
+                // var progression:Number = distance / levelDistance;
                 var row:int = Math.min(sign.frames / columns - 1, 
                     int((sign.frames - 1) / columns) * progression);
+                if (isWarning) {
+                    if (distance < levelDistance * 2) {
+                        row = Math.min(row, warning.frames / columns - 1);
+                    }
+                    else {
+                        row = (warning.frames - 1) / columns;
+                    }
+                }
                 sign.frame = columns * row + (isBritain ? 1 : 0);
                 sign.velocity.x = 0.5 * velocityX;
                 warningFrame = columns * row + 3;
-                FlxG.log("sign r " + row + " f " + sign.frame + " b " + isBritain + " wf " + warningFrame);
+                FlxG.log("sign r " + row + " f " + sign.frame + " p " + progression.toFixed(2));
                 // FlxG.log("warning velocity " + sign.velocity.x);
                 spawn(warningFrame);
-                signDistance += 12 + Math.random() * 2;
-                if (sign is Warning && warningFrame == Warning.gas) {
+                signDistance = distance + 14;
+                if (isWarning && warningFrame == Warning.gas) {
                     FlxG.log("gas " + distance + " frame " + warningFrame + " frames " + sign.frames);
                     signDistance += int.MAX_VALUE;
                     fuelUp();
                 }
                 // FlxG.log("signDistance " + signDistance);
-            }
-            else if (7 == distance % 8) {
-                if (2 * -640 < velocityX) {
-                    setVelocityX(velocityX - 60);
-                    FlxG.log("speed up " + velocityX);
-                }
             }
             progressTimer.start(progressTime, 1, progress);
         }
@@ -216,6 +242,11 @@ package com.finegamedesign.minimalism
             waveText.scrollFactor.x = 0.0;
             waveText.scrollFactor.y = 0.0;
             add(waveText);
+            scoreText = new FlxText(FlxG.width - 50, 0, 100, " of " + levelDistance * 2);
+            scoreText.color = MenuState.textColor;
+            scoreText.scrollFactor.x = 0.0;
+            scoreText.scrollFactor.y = 0.0;
+            add(scoreText);
             scoreText = new FlxText(FlxG.width - 120, 0, 100, "");
             scoreText.color = MenuState.textColor;
             scoreText.scrollFactor.x = 0.0;
@@ -237,7 +268,7 @@ package com.finegamedesign.minimalism
         private function updateHud():void
         {
             if ("play" == state) {
-                scoreText.text = "DISTANCE " + FlxG.score.toString();
+                scoreText.text = "DISTANCE " + FlxG.score;
             }
         }
 
@@ -270,21 +301,24 @@ package com.finegamedesign.minimalism
                 if (player.y == enemy.y || player.x + player.width / 2 < enemy.x) {
                     enemy.x = player.x + player.width - enemy.offset.x;
                 }
-                if (enemy is Truck) {
-                    truck = Truck(enemies.getFirstAvailable());
-                    truck.frame = enemy.frame - 1;
-                    truck.reset(enemy.x + enemy.width, middleY + driftDistance - truck.height / 2);
-                    truck = Truck(enemies.getFirstAvailable());
-                    truck.frame = enemy.frame - 2;
-                    truck.reset(enemy.x + enemy.width, middleY - driftDistance - truck.height / 2);
-                }
-                else if (enemy is Warning) {
-                    warning = Warning(warnings.getFirstAvailable());
-                    warning.frame = enemy.frame - 1;
-                    warning.reset(enemy.x + enemy.width, middleY - driftDistance - warning.height / 2);
-                    warning = Warning(warnings.getFirstAvailable());
-                    warning.frame = enemy.frame - 2;
-                    warning.reset(enemy.x + enemy.width, middleY + driftDistance - warning.height / 2);
+                var showSigns:Boolean = false;
+                if (showSigns) {
+                    if (enemy is Truck) {
+                        truck = Truck(enemies.getFirstAvailable());
+                        truck.frame = enemy.frame - 1;
+                        truck.reset(enemy.x + enemy.width, middleY + driftDistance - truck.height / 2);
+                        truck = Truck(enemies.getFirstAvailable());
+                        truck.frame = enemy.frame - 2;
+                        truck.reset(enemy.x + enemy.width, middleY - driftDistance - truck.height / 2);
+                    }
+                    else if (enemy is Warning) {
+                        warning = Warning(warnings.getFirstAvailable());
+                        warning.frame = enemy.frame - 1;
+                        warning.reset(enemy.x + enemy.width, middleY - driftDistance - warning.height / 2);
+                        warning = Warning(warnings.getFirstAvailable());
+                        warning.frame = enemy.frame - 2;
+                        warning.reset(enemy.x + enemy.width, middleY + driftDistance - warning.height / 2);
+                    }
                 }
                 FlxG.play(Sounds.explosion);
                 FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
@@ -299,7 +333,7 @@ package com.finegamedesign.minimalism
         {
             FlxG.timeScale = 1.0;
             player.solid = false;
-            FlxG.score += 100;
+            FlxG.score += 1;
             instructionText.text = "YOU MADE IT!  FUEL UP!";
             state = "win";
             FlxG.fade(0xFFFFFFFF, 3.0, win);

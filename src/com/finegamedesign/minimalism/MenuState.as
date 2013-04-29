@@ -21,32 +21,38 @@ package com.finegamedesign.minimalism
                 FlxG.scores.push(FlxG.score);
             }
             var t:FlxText;
-            t = new FlxText(0,FlxG.height/5,FlxG.width,"Right Side of the Road");
+            t = new FlxText(0,FlxG.height/8,FlxG.width,"Right Side of the Road");
             t.size = 20;
             t.color = textColor;
             t.alignment = "center";
             add(t);
-            t = new FlxText(0,FlxG.height/3, FlxG.width,
-                "In BRITAIN, drive on the LEFT."
-                + "\nIn USA, drive on the RIGHT."
-                + "\nTo switch sides of the road, CLICK or press SPACE."
-                + "\nTo start, CLICK or press SPACE."
+            t = new FlxText(0,FlxG.height/5, FlxG.width,
+                "In BRITAIN, drive on TOP."
+                + "\nIn USA, drive on BOTTOM."
+                + "\nTo switch sides, press SPACE or CLICK."
+                + "\nTo start, CLICK anywhere."
                 + "\n\nScore " + FlxG.score
                 + "\nHigh Score " + Math.max.apply(null, FlxG.scores)
-                + "\n\nWHITE sign:  Oncoming traffic in opposing lane."
-                + "\nBLACK warning: Obstacle in lane of travel."
+                + "\n\nWHITE sign:             BLACK warning:"
+                +   "\nTheir lane.                 Your lane."
                 );
             t.color = textColor;
             t.size = 14;
             t.alignment = "center";
             add(t);
-            var sign:Sign = new Sign(320 - 120, 380);
-            sign.x -= sign.width / 2;
-            sign.frame = 0;
+            var sign:Sign = new Sign(320, 280);
+            sign.x -= sign.frameWidth * 1.25;
+            sign.frame = 5;
             add(sign);
-            var warning:Warning = new Warning(320 + 120, 380);
-            warning.x -= warning.width / 2;
-            warning.frame = 0;
+            sign = new Sign(320, 380);
+            sign.x -= sign.frameWidth * 1.25;
+            sign.frame = 4;
+            add(sign);
+            var warning:Warning = new Warning(320, 280);
+            warning.frame = 4;
+            add(warning);
+            warning = new Warning(320, 380);
+            warning.frame = 5;
             add(warning);
             playing = false;
         }

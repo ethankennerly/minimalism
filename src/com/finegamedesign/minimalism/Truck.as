@@ -10,6 +10,7 @@ package com.finegamedesign.minimalism
         {
             super(X, Y, Sign.Img);
             loadGraphic(Sign.Img, true, false, 628 / 4, 81, true);
+            width = 0.25 * frameWidth;
             // addAnimation("collide", [0], 30, true);
             // addAnimation("idle", [1], 30, true);
             // play("idle");
@@ -17,7 +18,7 @@ package com.finegamedesign.minimalism
         
         override public function update():void 
         {
-            if (x < -width) {
+            if (x < -frameWidth) {
                 sound = false;
                 kill();
             }

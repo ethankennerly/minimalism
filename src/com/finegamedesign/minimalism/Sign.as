@@ -10,12 +10,13 @@ package com.finegamedesign.minimalism
         {
             super(X, Y, Img);
             loadGraphic(Img, true, false, 628 / 4, 81, true);
+            width = 0.25 * frameWidth;
             solid = false;
         }
         
         override public function update():void 
         {
-            if (x < -width) {
+            if (x < -frameWidth) {
                 kill();
             }
             super.update();

@@ -21,7 +21,7 @@ package com.finegamedesign.minimalism
         
         override public function update():void 
         {
-            if (x < -width) {
+            if (x < -frameWidth) {
                 if (solid && gas == frame) {
                     flicker();
                     solid = false;
