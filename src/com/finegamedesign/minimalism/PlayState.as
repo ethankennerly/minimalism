@@ -43,6 +43,7 @@ package com.finegamedesign.minimalism
             super.create();
             // FlxG.visualDebug = true;
             FlxG.worldBounds = new FlxRect(0, 100, 320, 380);
+            FlxG.stage.frameRate = 60;
             roads = new FlxGroup();
             road = new Road();
             var roadY:int = middleY - road.height / 2;
@@ -165,12 +166,10 @@ package com.finegamedesign.minimalism
         private function setVelocityXByDistance(distance:int):void
         {
             var minVelocityX:int = -640;
-            if (minVelocityX < velocityX) {
-                setVelocityX(
-                    Math.max(minVelocityX,
-                        int(distance / levelDistance * (minVelocityX - baseVelocityX) + baseVelocityX)));
-                FlxG.log("speed up " + velocityX);
-            }
+            setVelocityX(
+                Math.max(minVelocityX * 2,
+                    int(distance / levelDistance * (minVelocityX - baseVelocityX) + baseVelocityX)));
+            FlxG.log("speed " + velocityX);
         }
         
         private function progress(timer:FlxTimer):void
