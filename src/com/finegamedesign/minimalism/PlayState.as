@@ -107,6 +107,7 @@ package com.finegamedesign.minimalism
             player.play(directions[direction]);
             targetY = middleY + direction * driftDistance - player.height / 2;
             player.velocity.y = 2 * direction * driftDistance * (1.0 / driftTime);
+            FlxG.play(Sounds.turn);
             // FlxG.log("switchLane: at " + player.velocity.y + " to " + targetY);
         }
 
@@ -124,11 +125,12 @@ package com.finegamedesign.minimalism
                 player.velocity.y = 0;
             }
         }
-        
+
         private function spawnTruck(ignoredFrame:int):void
         {
             truck = Truck(enemies.getFirstAvailable());
             placeInRoad(truck, signDirection, 1.5, 1.0);
+            truck.sound = true;
         }
             
         private function spawnObstacle(warningFrame:int):void
@@ -160,7 +162,7 @@ package com.finegamedesign.minimalism
                 var isBritain:Boolean = Math.random() < 0.5;
                 signDirection = isBritain ? -1 : 1;
                 var group:FlxGroup = isWarning ? warnings : signs;
-                var columns:int = isWarning ? 3 : 2;
+                var columns:int = isWarning ? 4 : 2;
                 var spawn:Function = isWarning ? spawnObstacle : spawnTruck;
                 sign = FlxSprite(group.getFirstAvailable());
                 sign.x = FlxG.width;
@@ -171,7 +173,7 @@ package com.finegamedesign.minimalism
                     int((sign.frames - 1) / columns) * distance / winDistance);
                 sign.frame = columns * row + (isBritain ? 1 : 0);
                 sign.velocity.x = 0.5 * velocityX;
-                warningFrame = columns * row + 2;
+                warningFrame = columns * row + 3;
                 if (isWarning) {
                     FlxG.log("sign r " + row + " f " + sign.frame + " b " + isBritain + " wf " + warningFrame);
                 }
@@ -257,9 +259,13 @@ package com.finegamedesign.minimalism
                 if (enemy is Truck) {
                     Truck(enemy).play("collide");
                 }
+                else if (enemy is Warning) {
+                    Warning(enemy).frame--;
+                }
                 if (player.x + player.width / 2 < enemy.x) {
                     enemy.x = player.x + player.width - enemy.offset.x;
                 }
+                enemy.solid = false;
                 FlxG.play(Sounds.explosion);
                 FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
                 stop();

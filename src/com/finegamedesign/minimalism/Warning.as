@@ -13,10 +13,10 @@ package com.finegamedesign.minimalism
         public function Warning(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
-            loadGraphic(Img, true, false, 630 / 3, 81, true);
+            loadGraphic(Img, true, false, 840 / 4, 81, true);
             solid = false;
             gas = frames - 1;
-            FlxG.log("Warning " + frames);
+            // FlxG.log("Warning " + frames);
         }
         
         override public function update():void 

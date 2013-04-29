@@ -14,6 +14,7 @@ package com.finegamedesign.minimalism
             if (null == FlxG.scores || FlxG.scores.length <= 0) {
                 FlxG.scores = [0];
                 FlxG.score = 0;
+                FlxG.playMusic(Sounds.music);
             }
             else {
                 FlxG.scores.push(FlxG.score);
