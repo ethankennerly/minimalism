@@ -9,9 +9,7 @@ package com.finegamedesign.minimalism
         public function Sign(X:int = 0, Y:int = 0, ImgClass:Class = null) 
         {
             super(X, Y, Img);
-            loadGraphic(Img, true, false, 314 / 2, 81, true);
-            addAnimation("collide", [0], 30, true);
-            addAnimation("idle", [1], 30, true);
+            loadGraphic(Img, true, false, 628 / 4, 81, true);
             solid = false;
         }
         

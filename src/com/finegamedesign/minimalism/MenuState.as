@@ -5,7 +5,8 @@ package com.finegamedesign.minimalism
     public class MenuState extends FlxState
     {
         public static var textColor:uint = 0x000000;
-
+        private var playing:Boolean;
+        
         override public function create():void
         {
             super.create();
@@ -32,12 +33,22 @@ package com.finegamedesign.minimalism
                 + "\nTo start, CLICK or press SPACE."
                 + "\n\nScore " + FlxG.score
                 + "\nHigh Score " + Math.max.apply(null, FlxG.scores)
-                + "\n\nGuess which nation you are in by the colloquial word on the sign."
+                + "\n\nRead WHITE sign.  Guess nation.  Switch lane."
+                + "\nRead BLACK warning.  Guess nation.  Pass obstacles."
                 );
             t.color = textColor;
             t.size = 14;
             t.alignment = "center";
             add(t);
+            var sign:Sign = new Sign(320 - 120, 380);
+            sign.x -= sign.width / 2;
+            sign.frame = 0;
+            add(sign);
+            var warning:Warning = new Warning(320 + 120, 380);
+            warning.x -= warning.width / 2;
+            warning.frame = 0;
+            add(warning);
+            playing = false;
         }
 
         override public function update():void
@@ -46,6 +57,15 @@ package com.finegamedesign.minimalism
 
             if(FlxG.mouse.justReleased() || FlxG.keys.justReleased("SPACE") || FlxG.keys.justPressed("X"))
             {
+                FlxG.play(Sounds.start);
+                FlxG.fade(0xFFFFFF00, 0.5, play);
+            }
+        }
+        
+        private function play():void
+        {
+            if (!playing) {
+                playing = true;
                 FlxG.switchState(new PlayState());
             }
         }

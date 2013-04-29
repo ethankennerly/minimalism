@@ -23,7 +23,7 @@ package com.finegamedesign.minimalism
         private var velocityX:int;
         private var road:Road;
         private var roads:FlxGroup;
-        private var baseSpawnTime:Number = 10.0;
+        private var baseSpawnTime:Number = 15.0;
         private var progressTimer:FlxTimer;
         private var baseProgressTime:Number = 1.0;
         private var progressTime:Number;
@@ -74,7 +74,7 @@ package com.finegamedesign.minimalism
             }
             add(signs);
             enemies = new FlxGroup();
-            for (var concurrentTruck:int = 0; concurrentTruck < 2; concurrentTruck++) {
+            for (var concurrentTruck:int = 0; concurrentTruck < 4; concurrentTruck++) {
                 truck = new Truck();
                 truck.exists = false;
                 enemies.add(truck);
@@ -126,10 +126,11 @@ package com.finegamedesign.minimalism
             }
         }
 
-        private function spawnTruck(ignoredFrame:int):void
+        private function spawnTruck(warningFrame:int):void
         {
             truck = Truck(enemies.getFirstAvailable());
             placeInRoad(truck, signDirection, 1.5, 1.0);
+            truck.frame = warningFrame;
             truck.sound = true;
         }
             
@@ -146,48 +147,51 @@ package com.finegamedesign.minimalism
         {
             truck.revive();
             truck.y = middleY + -signDirection * driftDistance - truck.height / 2;
-            truck.x = 640 - Math.pow(speed, 1.5) * baseSpawnTime * baseVelocityX;
+            truck.x = -speed * baseSpawnTime * baseVelocityX;
             truck.velocity.x = speed * velocityX;
             truck.width = collisionWidthRatio * truck.frameWidth;
             truck.offset.x = 0.5 * (1.0 - collisionWidthRatio) * truck.frameWidth;
             add(truck);
         }
-        
+
         private function progress(timer:FlxTimer):void
         {
             distance++;
             FlxG.score += 1;
             if (signDistance <= distance) {
-                var isWarning:Boolean = 20 < distance && Math.random() < 0.25;
+                var warningDistance:int = 40;
+                var isWarning:Boolean = warningDistance < distance && Math.random() < 0.25;
                 var isBritain:Boolean = Math.random() < 0.5;
                 signDirection = isBritain ? -1 : 1;
                 var group:FlxGroup = isWarning ? warnings : signs;
-                var columns:int = isWarning ? 4 : 2;
+                var columns:int = 4;
                 var spawn:Function = isWarning ? spawnObstacle : spawnTruck;
                 sign = FlxSprite(group.getFirstAvailable());
                 sign.x = FlxG.width;
                 sign.y = FlxG.height / 8 - sign.height / 2;
                 sign.revive();
                 sign.solid = false;
+                var firstDistance:int = isWarning ? warningDistance : 0;
+                var progression:Number = (distance - firstDistance) / (winDistance - firstDistance);
                 var row:int = Math.min(sign.frames / columns - 1, 
-                    int((sign.frames - 1) / columns) * distance / winDistance);
+                    int((sign.frames - 1) / columns) * progression);
                 sign.frame = columns * row + (isBritain ? 1 : 0);
                 sign.velocity.x = 0.5 * velocityX;
                 warningFrame = columns * row + 3;
-                if (isWarning) {
-                    FlxG.log("sign r " + row + " f " + sign.frame + " b " + isBritain + " wf " + warningFrame);
-                }
+                FlxG.log("sign r " + row + " f " + sign.frame + " b " + isBritain + " wf " + warningFrame);
                 // FlxG.log("warning velocity " + sign.velocity.x);
                 spawn(warningFrame);
                 signDistance += 12 + Math.random() * 2;
                 if (warningFrame == Warning.gas) {
+                    FlxG.log("gas " + distance);
                     signDistance += winDistance;
                 }
                 // FlxG.log("signDistance " + signDistance);
             }
-            else if (4 == distance % 5) {
+            else if (3 == distance % 4) {
                 if (2 * -640 < velocityX) {
-                    setVelocityX(velocityX - 100);
+                    setVelocityX(velocityX - 60);
+                    FlxG.log("speed up " + velocityX);
                 }
             }
             progressTimer.start(progressTime, 1, progress);
@@ -254,23 +258,34 @@ package com.finegamedesign.minimalism
             var player:FlxSprite = FlxSprite(me);
             var enemy:FlxSprite = FlxSprite(you);
             if ("play" == state) {
+                enemy.solid = false;
                 FlxG.timeScale = 1.0;
                 Player(player).play("collide");
-                if (enemy is Truck) {
-                    Truck(enemy).play("collide");
-                }
-                else if (enemy is Warning) {
-                    Warning(enemy).frame--;
-                }
-                if (player.x + player.width / 2 < enemy.x) {
+                enemy.frame--;
+                if (player.y == enemy.y || player.x + player.width / 2 < enemy.x) {
                     enemy.x = player.x + player.width - enemy.offset.x;
                 }
-                enemy.solid = false;
+                if (enemy is Truck) {
+                    truck = Truck(enemies.getFirstAvailable());
+                    truck.frame = enemy.frame - 1;
+                    truck.reset(enemy.x + enemy.width, middleY + driftDistance - truck.height / 2);
+                    truck = Truck(enemies.getFirstAvailable());
+                    truck.frame = enemy.frame - 2;
+                    truck.reset(enemy.x + enemy.width, middleY - driftDistance - truck.height / 2);
+                }
+                else if (enemy is Warning) {
+                    warning = Warning(warnings.getFirstAvailable());
+                    warning.frame = enemy.frame - 1;
+                    warning.reset(enemy.x + enemy.width, middleY - driftDistance - warning.height / 2);
+                    warning = Warning(warnings.getFirstAvailable());
+                    warning.frame = enemy.frame - 2;
+                    warning.reset(enemy.x + enemy.width, middleY + driftDistance - warning.height / 2);
+                }
                 FlxG.play(Sounds.explosion);
                 FlxG.camera.shake(0.05, 0.5, null, false, FlxCamera.SHAKE_HORIZONTAL_ONLY);
                 stop();
                 instructionText.text = "YOU CRASHED";
-                FlxG.fade(0xFF000000, 3.0, lose);
+                FlxG.fade(0xFF000000, 4.0, lose);
                 state = "lose";
             }
         }

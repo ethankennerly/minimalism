@@ -8,6 +8,7 @@ tune
 cohere
 remove gas from signs.
 title screen help image
+tire, mailbox, garbage collector, dumpster
 kongregate
 name
 submit
@@ -66,4 +67,10 @@ how can i feel alert?
 above road see rubbish.  in road see rubbish.  feel alert?
 above road see rubbish.  in road see truck with rubbish.  feel alert?
 above road see rubbish.  in road see rubbish on wheels.  feel alert?
+
+
+
+crash:
+	see the two variant signs on their side of the road.
+
 
