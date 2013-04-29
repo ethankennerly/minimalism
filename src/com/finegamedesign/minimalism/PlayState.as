@@ -158,6 +158,9 @@ package com.finegamedesign.minimalism
         {
             distance++;
             FlxG.score += 1;
+            if ("play" != state) {
+                return;
+            }
             if (signDistance <= distance) {
                 var warningDistance:int = 40;
                 var isWarning:Boolean = warningDistance < distance && Math.random() < 0.25;
@@ -172,7 +175,8 @@ package com.finegamedesign.minimalism
                 sign.revive();
                 sign.solid = false;
                 var firstDistance:int = isWarning ? warningDistance : 0;
-                var progression:Number = (distance - firstDistance) / (winDistance - firstDistance);
+                // var progression:Number = (distance - firstDistance) / (winDistance - firstDistance);
+                var progression:Number = distance / winDistance;
                 var row:int = Math.min(sign.frames / columns - 1, 
                     int((sign.frames - 1) / columns) * progression);
                 sign.frame = columns * row + (isBritain ? 1 : 0);
@@ -182,9 +186,10 @@ package com.finegamedesign.minimalism
                 // FlxG.log("warning velocity " + sign.velocity.x);
                 spawn(warningFrame);
                 signDistance += 12 + Math.random() * 2;
-                if (warningFrame == Warning.gas) {
-                    FlxG.log("gas " + distance);
-                    signDistance += winDistance;
+                if (sign is Warning && warningFrame == Warning.gas) {
+                    FlxG.log("gas " + distance + " frame " + warningFrame + " frames " + sign.frames);
+                    signDistance += int.MAX_VALUE;
+                    fuelUp();
                 }
                 // FlxG.log("signDistance " + signDistance);
             }
@@ -293,9 +298,9 @@ package com.finegamedesign.minimalism
         private function fuelUp():void
         {
             FlxG.timeScale = 1.0;
+            player.solid = false;
             FlxG.score += 100;
             instructionText.text = "YOU MADE IT!  FUEL UP!";
-            stop();
             state = "win";
             FlxG.fade(0xFFFFFFFF, 3.0, win);
         }
